@@ -16,7 +16,7 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden; /* Prevents the whole page from moving */
     position: fixed;  /* Glues the viewport to the device screen */
     overscroll-behavior: none; /* Kills the pull-to-refresh / rubber-band effect */
@@ -593,7 +593,9 @@ body {
 
 
 .chat-input-container {
-    padding: 20px;
+    /* PATCHED: Top/sides are normal, but bottom dynamically dodges the gesture bar */
+    padding: 15px 20px calc(25px + env(safe-area-inset-bottom, 15px)); 
+    
     background: color-mix(in srgb, var(--bg-solid) 70%, transparent); 
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
@@ -602,6 +604,7 @@ body {
     gap: 10px;
     align-items: center;
 }
+
 
 .chat-input {
     flex: 1;
