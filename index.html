@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+    <div class="bg-blur-overlay"></div>
+
+    <main class="top-section">
+        <button class="notification-btn" id="closeBtn" aria-label="Close or Notifications"></button>
+
+        <div class="greeting-container" id="mainGreeting">
+            <h1 class="greeting-text">Hey,</h1>
+            <h2 class="user-name" id="userName">User</h2>
+        </div>
+    </main>
+    
+    <section class="bottom-section" id="mainBottom">
+        <div class="vertical-icons">
+            <button class="side-btn" aria-label="Action 1"></button>
+            <button class="side-btn" aria-label="Action 2"></button>
+            <button class="side-btn" aria-label="Action 3"></button>
+        </div>
+    </section>
+
+    <nav class="dockbar" id="mainDock">
+        <button class="dock-btn" id="loginBtn" aria-label="Cloud feature">
+            <img src="cloud.png" alt="Cloud">
+        </button>
+        
+        <button class="dock-btn" aria-label="Ribbon feature">
+            <img src="ribbon.png" alt="Ribbon">
+        </button>
+        
+        <button class="dock-btn" id="settingsBtn" aria-label="Settings">
+            <img src="settings.png" alt="Settings">
+        </button>
+        
+        <button class="dock-btn" id="wallpaperBtn" aria-label="Change Theme">
+            <img src="theme.png" alt="Theme Settings"> 
+        </button>
+    </nav>
+
+    <!-- ========================================= -->
+    <!-- LOGIN INTERFACE                           -->
+    <!-- ========================================= -->
+    <div class="login-wrapper" id="loginWrapper">
+        <div class="login-box">
+            <h2 class="login-title">Welcome Back</h2>
+            <!-- UPDATED PLACEHOLDER HERE -->
+            <input type="text" id="emailInput" class="login-input" placeholder="Email or Username" autocomplete="off">
+            <input type="password" id="passInput" class="login-input" placeholder="Password">
+            <button class="login-submit" id="submitLogin">Okie</button>
+        </div>
+    </div>
+    
+    <!-- ========================================= -->
+    <!-- DIRECT MESSAGES INTERFACE                 -->
+    <!-- ========================================= -->
+    <div class="dm-wrapper" id="dmWrapper">
+        
+        <div class="dm-header-glass">
+            <input type="text" id="dmSearch" class="dm-search" placeholder="Search by username or email..." autocomplete="off">
+        </div>
+
+        <!-- Dynamic DM History & Search Suggestions List -->
+        <div class="dm-list" id="dmListContainer"></div>
+
+        <!-- Active Chat Window Layer -->
+        <div class="chat-room" id="chatRoom">
+            <div class="chat-header">
+                <h3 class="chat-title" id="activeChatTitle">Chat</h3>
+            </div>
+            
+            <div class="chat-messages" id="chatMessagesContainer"></div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="chatInputField" class="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button class="chat-send" id="chatSendBtn">
+                    <img src="send.png" alt="Send">
+                </button>
+            </div>
+        </div> 
+    </div> 
+
+    <!-- ========================================= -->
+    <!-- SETTINGS INTERFACE                        -->
+    <!-- ========================================= -->
+    <div class="settings-wrapper" id="settingsWrapper">
+        <div class="settings-box">
+            <h2 class="login-title">Your Profile</h2>
+            
+            <div class="pfp-section">
+                <div class="pfp-circle">
+                    <img src="cloud.png" id="pfpPreview" alt="Profile Picture">
+                </div>
+                <input type="file" id="pfpInput" accept="image/*" style="display: none;">
+                <button class="change-pfp-btn" id="changePfpBtn">Change Avatar</button>
+            </div>
+            
+            <div class="username-section">
+                <input type="text" id="usernameInput" class="login-input" placeholder="Unique Username" autocomplete="off">
+            </div>
+            
+            <button class="login-submit" id="saveSettingsBtn">Save Profile</button>
+            <button class="logout-btn" id="logoutBtn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- WALLPAPER MODAL                           -->
+    <!-- ========================================= -->
+    <div class="modal-overlay" id="themeModal">
+        <div class="modal-content">
+            <button class="wallpaper-option" data-bg="black.jpg">W1</button>
+            <button class="wallpaper-option" data-bg="white.jpg">W2</button>
+            <button class="wallpaper-option" data-bg="pink.jpg">W3</button>
+            <button class="wallpaper-option" data-bg="beige.jpg">W4</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+
+</body>
+</html>

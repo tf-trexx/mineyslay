@@ -1,0 +1,766 @@
+/* Base Reset for clean rendering across all devices */
+
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    /* Using native system fonts for maximum performance and a modern look */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Flexbox layout to stack sections vertically */
+    display: flex;
+    flex-direction: column;
+    
+    /* Ensures the page takes up exactly the full height of the device screen */
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevents accidental horizontal scrolling */
+    
+    /* Full-screen wallpaper setup */
+    background-image: url('beige.jpg'); /* Sets beige as the default startup background */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background-image 0.5s ease-in-out; /* Smooth fade when changing */
+}
+
+/* ========================================= */
+/* TOP SECTION: GREETING & NOTIFICATIONS     */
+/* ========================================= */
+
+.top-section {
+    flex: 1; 
+    min-height: 45vh; 
+    position: relative;
+    padding: 60px 25px 20px; 
+}
+
+.notification-btn {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%; 
+    border: none;
+    
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+    z-index: 1000; /* Keeps the button clickable when login is open */
+}
+
+.notification-btn:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* We declare the variables at the root of the document */
+:root {
+    --greeting-color: #4A4036; /* Text color */
+    --bg-solid: #F9F6F0;       /* Main DM background */
+    --bg-surface: #FFFFFF;     /* User list boxes */
+    --bg-hover: #EBE4DA;       /* Avatars and tap effects */
+}
+
+.greeting-container {
+    margin-top: 30px; 
+    color: var(--greeting-color); 
+    transition: color 0.5s ease-in-out; 
+}
+
+.greeting-text {
+    font-size: 3.2rem;
+    font-weight: normal; 
+    line-height: 1.1;
+    letter-spacing: -1px;
+    font-family: 'Pacifico', Sans-Serif; /* Makes "Hey," look stylish and handwritten */
+    font-weight: normal; 
+
+}
+
+.user-name {
+    font-size: 3.2rem;
+    font-weight: normal; 
+    line-height: 1.1;
+    letter-spacing: -1px;
+    font-family: 'Pacifico', sans-serif; /* Makes the username look clean and modern */
+
+}
+
+/* ========================================= */
+/* BOTTOM SECTION: VERTICAL ICONS            */
+/* ========================================= */
+
+.bottom-section {
+    flex: 1; 
+    min-height: 43vh;
+    position: relative;
+    padding: 20px 25px; 
+}
+
+.vertical-icons {
+    display: flex;
+    flex-direction: column; 
+    gap: 15px; 
+    width: 55px; 
+}
+
+.side-btn {
+    width: 55px;
+    height: 55px;
+    border-radius: 20px; 
+    border: none;
+    
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.side-btn:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* ========================================= */
+/* DOCKBAR & BUTTON STYLES                   */
+/* ========================================= */
+
+.dockbar {
+    position: fixed;
+    bottom: 35px; 
+    left: 50%;
+    transform: translateX(-50%); 
+    
+    width: 85%; 
+    max-width: 400px; 
+    
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly; 
+    padding: 15px 5px; 
+    
+    background: rgba(255, 255, 255, 0.25); 
+    backdrop-filter: blur(16px); 
+    -webkit-backdrop-filter: blur(16px); 
+    
+    border: 1px solid rgba(255, 255, 255, 0.4); 
+    border-radius: 30px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    
+    z-index: 1000; 
+}
+
+.dock-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 22px; 
+    border: none;
+    
+    background: rgba(255, 255, 255, 0.45); 
+    box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.4); 
+    
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.dock-btn:active {
+    transform: scale(0.92); 
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.dock-btn, .side-btn, .notification-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dock-btn img, .side-btn img, .notification-btn img {
+    width: 55%; 
+    height: 55%;
+    object-fit: contain; 
+}
+
+/* ========================================= */
+/* WALLPAPER SELECTION MODAL                 */
+/* ========================================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3); 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000; 
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    width: 65%; 
+    max-width: 320px;
+    background: rgba(255, 255, 255, 0.6); 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 35px; 
+    padding: 25px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px;
+    
+    transform: scale(0.8);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.wallpaper-option {
+    aspect-ratio: 1; 
+    border-radius: 20px;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4A4036;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.wallpaper-option:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================= */
+/* BACKGROUND BLUR LENS                      */
+/* ========================================= */
+
+.bg-blur-overlay {
+    position: fixed;
+    top: -10%;
+    left: -10%;
+    width: 120vw;
+    height: 120vh;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    background-color: rgba(235, 222, 208, 0.15); 
+    z-index: -1; 
+    pointer-events: none;
+}
+
+/* ========================================= */
+/* LOGIN INTERFACE                           */
+/* ========================================= */
+
+.login-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 500; 
+}
+
+.login-wrapper.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.login-box {
+    width: 75%;
+    max-width: 340px;
+    
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 40px; 
+    padding: 40px 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login-wrapper.active .login-box {
+    transform: translateY(0) scale(1);
+}
+
+.login-title {
+    color: var(--greeting-color);
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+    transition: color 0.5s ease-in-out;
+}
+
+.login-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 20px; 
+    background: rgba(255, 255, 255, 0.6);
+    color: #4A4036;
+    font-size: 1rem;
+    font-family: inherit;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
+    outline: none;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-input:focus {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+.login-input::placeholder {
+    color: rgba(74, 64, 54, 0.5);
+}
+
+.login-submit {
+    width: 100%;
+    padding: 16px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 20px;
+    
+    background: var(--greeting-color); 
+    color: #F8F5F2; 
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, filter 0.2s ease, background 0.5s ease-in-out;
+}
+
+.login-submit:active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
+}
+
+/* Utility class to hide main elements smoothly */
+.ui-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.95);
+}
+
+#mainGreeting, #mainBottom, #mainDock {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ========================================= */
+/* DIRECT MESSAGES UI                        */
+/* ========================================= */
+
+.dm-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    background-color: var(--bg-solid); 
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease, background-color 0.5s ease-in-out;
+    z-index: 400; 
+    
+    /* Lock down horizontal scrolling */
+    overflow-y: auto;
+    overflow-x: hidden; 
+    overscroll-behavior-x: none; 
+}
+
+
+.dm-wrapper.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Glassy Header covering the Search Bar */
+.dm-header-glass {
+    position: sticky;
+    top: 0;
+    padding: 70px 20px 20px; 
+    
+    background: color-mix(in srgb, var(--bg-solid) 70%, transparent);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
+
+.dm-search {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 25px;
+    
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03), 0 4px 15px rgba(0, 0, 0, 0.02);
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--greeting-color);
+    outline: none;
+}
+
+.dm-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dm-user-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-surface); 
+    border-radius: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.5s ease-in-out;
+}
+
+.dm-user-item:active {
+    transform: scale(0.97);
+    background: var(--bg-hover); 
+}
+
+.dm-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 18px; 
+    background: var(--bg-hover); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background 0.5s ease-in-out;
+}
+
+.dm-avatar img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.dm-username {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--greeting-color);
+}
+
+/* ========================================= */
+/* INDIVIDUAL CHAT ROOM                      */
+/* ========================================= */
+
+.chat-room {
+    position: absolute;
+    top: 0;
+    left: 100%; 
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-solid); 
+    
+    display: flex;
+    flex-direction: column;
+    pointer-events: none; 
+    
+    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.5s ease-in-out;
+    z-index: 20;
+}
+
+.chat-room.active {
+    left: 0; 
+    pointer-events: all; 
+}
+
+
+.chat-header {
+    padding: 60px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--bg-solid); 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.5s ease-in-out;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--greeting-color);
+    cursor: pointer;
+}
+
+.chat-title {
+    font-size: 1.4rem;
+    color: var(--greeting-color);
+}
+
+.chat-messages {
+    flex: 1; 
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.chat-input-container {
+    padding: 20px;
+    background: color-mix(in srgb, var(--bg-solid) 70%, transparent); 
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+}
+
+.chat-send {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: var(--greeting-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background 0.5s ease-in-out;
+}
+
+.chat-send img {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+/* ========================================= */
+/* MESSAGE BUBBLES                           */
+/* ========================================= */
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+    padding: 20px;
+}
+
+.message {
+    max-width: 80%;
+    padding: 12px 18px;
+    border-radius: 20px;
+    font-size: 1rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message.received {
+    align-self: flex-start;
+    background: var(--bg-surface); 
+    color: var(--greeting-color);
+    border-bottom-left-radius: 5px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.message.sent {
+    align-self: flex-end;
+    background: var(--greeting-color); 
+    color: #FFFFFF;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* ========================================= */
+/* SETTINGS INTERFACE                        */
+/* ========================================= */
+
+.settings-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-solid);
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease, background-color 0.5s ease-in-out;
+    z-index: 450; 
+}
+
+.settings-wrapper.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.settings-box {
+    width: 85%;
+    max-width: 340px;
+    
+    /* Using the exact same glassmorphism styling as the login box */
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 40px; 
+    padding: 40px 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    
+    /* Pop-up animation matching login box */
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.settings-wrapper.active .settings-box {
+    transform: translateY(0) scale(1);
+}
+
+.pfp-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.pfp-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.05);
+    transition: background 0.5s ease-in-out;
+}
+
+.pfp-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures any size image fits beautifully */
+}
+
+.change-pfp-btn {
+    background: none;
+    border: none;
+    color: var(--greeting-color);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+.username-section {
+    width: 100%;
+}
+
+
+/* --- LOGOUT BUTTON --- */
+/* --- LOGOUT BUTTON --- */
+.logout-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: -10px; 
+    
+    /* Uses the dynamic theme variables instead of hardcoded red */
+    border: 1px solid var(--greeting-color); 
+    background: transparent; 
+    color: var(--greeting-color); 
+    
+    opacity: 0.6; /* Slightly faded so it doesn't steal attention from 'Save Profile' */
+    
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.3s ease, opacity 0.3s ease;
+}
+
+.logout-btn:active {
+    transform: scale(0.95);
+}
+
+.logout-btn:hover {
+    background: var(--bg-hover); /* Uses the theme's specific hover color */
+    opacity: 1; /* Lights up to full brightness when hovered */
+}
+
