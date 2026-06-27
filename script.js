@@ -441,3 +441,34 @@ document.querySelectorAll('.wallpaper-option').forEach(btn => {
         document.getElementById('themeModal').classList.remove('active');
     });
 });
+
+
+// =========================================================================
+// PATCHED: STRICT MOBILE VIEWPORT & BOUNCE LOCK
+// =========================================================================
+
+// 1. Mathematically kill double-tap to zoom (Crucial for iOS Safari)
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (event) => {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault(); // If tapped twice within 300ms, kill the zoom
+    }
+    lastTouchEnd = now;
+}, { passive: false });
+
+// 2. Kill Pinch-to-Zoom gestures
+document.addEventListener('gesturestart', (event) => {
+    event.preventDefault();
+});
+
+// 3. Kill Rubber-Band Background Bouncing while keeping Chats scrollable
+document.addEventListener('touchmove', (event) => {
+    // Check if the user's finger is currently touching a list that WE want to be scrollable
+    const isInsideScrollableList = event.target.closest('.dm-list, .chat-messages');
+    
+    // If their finger is NOT inside the chat list or DM list, kill the swipe!
+    if (!isInsideScrollableList) {
+        event.preventDefault(); 
+    }
+}, { passive: false });
