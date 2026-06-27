@@ -10,34 +10,45 @@
 }
 
 /* --- STRICT SCREEN LOCK --- */
-/* This prevents the "bounce" and keeps the page height fixed */
 html, body {
     margin: 0;
     padding: 0;
     width: 100vw;
     height: 100vh;
-    overflow: hidden; /* Prevents the whole page from moving */
-    position: fixed;  /* Glues the viewport to the device screen */
-    overscroll-behavior: none; /* Kills the pull-to-refresh effect */
-    touch-action: none; /* Disables browser-level scrolling gestures */
+    overflow: hidden; /* This stops the entire page from bouncing */
+    position: fixed;  /* This glues the viewport to the screen */
+    overscroll-behavior: none; 
+    touch-action: none; 
+}
+
+/* --- MAIN CONTAINER LOCKDOWN --- */
+/* Ensure the top section and bottom section are not scrollable */
+.top-section, .bottom-section, .dockbar {
+    position: fixed; /* Keeps these fixed relative to the screen */
+    width: 100%;
+    z-index: 10;
+}
+
+/* Ensure these specific areas are the ONLY things that can scroll */
+.dm-list, .chat-messages {
+    overflow-y: auto;          
+    overscroll-behavior: contain; 
+    touch-action: pan-y;       
+    flex: 1; /* Makes them fill available space */
 }
 
 /* --- YOUR BODY STYLE --- */
 body {
-    /* Using native system fonts for maximum performance and a modern look */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    
-    /* Flexbox layout to stack sections vertically */
     display: flex;
     flex-direction: column;
-    
-    /* Full-screen wallpaper setup */
     background-image: url('beige.jpg');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
+    background-attachment: fixed; /* Keeps background still */
     transition: background-image 0.5s ease-in-out; 
 }
+
 
 
 /* ========================================= */
