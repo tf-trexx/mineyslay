@@ -472,3 +472,19 @@ document.addEventListener('touchmove', (event) => {
         event.preventDefault(); 
     }
 }, { passive: false });
+
+
+// =========================================================================
+// PATCHED: MOBILE KEYBOARD SNAP-BACK FIX
+// =========================================================================
+document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('blur', () => {
+        // When the keyboard closes (input loses focus), force the browser back to the top
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }, 100); 
+    });
+});
+
