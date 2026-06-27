@@ -63,7 +63,7 @@ body {
 }
 
 .notification-btn {
-    position: absolute;
+    position: fixed; /* Fixed to window */
     top: 25px;
     right: 25px;
     width: 45px;
@@ -77,8 +77,10 @@ body {
     
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
-    pointer-events: auto;
-    z-index: 99900; /* Keeps the button clickable when login is open */
+    
+    /* THE FIXES */
+    pointer-events: auto;   /* Forces the button to receive clicks */
+    z-index: 999999;        /* Puts it on the absolute top layer */
 }
 
 .notification-btn:active {
@@ -421,6 +423,17 @@ body {
 /* ========================================= */
 /* DIRECT MESSAGES UI                        */
 /* ========================================= */
+
+/* Tell the wrappers to ignore clicks, so they pass through to the button behind them */
+.dm-wrapper, .settings-wrapper, .login-wrapper {
+    pointer-events: none;
+}
+
+/* BUT re-enable clicks for the things inside the wrappers */
+.dm-header-glass, .dm-list, .chat-room, .login-box, .settings-box {
+    pointer-events: auto;
+}
+
 
 .dm-wrapper {
     position: fixed;
