@@ -18,7 +18,6 @@ html, body {
     overflow: hidden; /* This stops the entire page from bouncing */
     position: fixed;  /* This glues the viewport to the screen */
     overscroll-behavior: none; 
-    touch-action: none; 
 }
 
 /* --- MAIN CONTAINER LOCKDOWN --- */
