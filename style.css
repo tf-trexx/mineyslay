@@ -9,6 +9,20 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* --- STRICT SCREEN LOCK --- */
+/* This prevents the "bounce" and keeps the page height fixed */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Prevents the whole page from moving */
+    position: fixed;  /* Glues the viewport to the device screen */
+    overscroll-behavior: none; /* Kills the pull-to-refresh effect */
+    touch-action: none; /* Disables browser-level scrolling gestures */
+}
+
+/* --- YOUR BODY STYLE --- */
 body {
     /* Using native system fonts for maximum performance and a modern look */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -17,17 +31,14 @@ body {
     display: flex;
     flex-direction: column;
     
-    /* Ensures the page takes up exactly the full height of the device screen */
-    min-height: 100vh;
-    overflow-x: hidden; /* Prevents accidental horizontal scrolling */
-    
     /* Full-screen wallpaper setup */
-    background-image: url('beige.jpg'); /* Sets beige as the default startup background */
+    background-image: url('beige.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    transition: background-image 0.5s ease-in-out; /* Smooth fade when changing */
+    transition: background-image 0.5s ease-in-out; 
 }
+
 
 /* ========================================= */
 /* TOP SECTION: GREETING & NOTIFICATIONS     */
