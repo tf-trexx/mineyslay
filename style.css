@@ -17,7 +17,8 @@ html, body {
     height: 100vh;
     overflow: hidden; /* This stops the entire page from bouncing */
     position: fixed;  /* This glues the viewport to the screen */
-    overscroll-behavior: none; 
+    overscroll-behavior: none;
+    touch-action: none;
 }
 
 /* --- MAIN CONTAINER LOCKDOWN --- */
@@ -76,7 +77,8 @@ body {
     
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
-    z-index: 1000; /* Keeps the button clickable when login is open */
+    pointer-events: auto;
+    z-index: 99900; /* Keeps the button clickable when login is open */
 }
 
 .notification-btn:active {
