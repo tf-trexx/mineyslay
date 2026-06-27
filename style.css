@@ -9,58 +9,55 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* --- STRICT SCREEN LOCK --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* This physically prevents the page from bouncing */
+    position: fixed;  /* This locks the viewport */
+    overscroll-behavior: none; 
+    touch-action: none;
+}
+
 body {
-    /* Using native system fonts for maximum performance and a modern look */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    
-    /* Flexbox layout to stack sections vertically */
     display: flex;
     flex-direction: column;
-    
-    /* Ensures the page takes up exactly the full height of the device screen */
-    min-height: 100vh;
-    overflow-x: hidden; /* Prevents accidental horizontal scrolling */
-    
-    /* Full-screen wallpaper setup */
-    background-image: url('beige.jpg'); /* Sets beige as the default startup background */
+    background-image: url('beige.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    transition: background-image 0.5s ease-in-out; /* Smooth fade when changing */
+    transition: background-image 0.5s ease-in-out;
 }
 
-/* ========================================= */
-/* TOP SECTION: GREETING & NOTIFICATIONS     */
-/* ========================================= */
-
+/* --- LAYERED FIXED POSITIONING --- */
 .top-section {
-    flex: 1; 
-    min-height: 45vh; 
-    position: relative;
-    padding: 60px 25px 20px; 
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 45vh;
+    pointer-events: none; /* Let clicks pass through to background */
 }
 
+/* Only the actual button needs clicks */
 .notification-btn {
-    position: absolute;
+    pointer-events: auto;
+    position: fixed; /* Fixed relative to screen, not section */
     top: 25px;
     right: 25px;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%; 
-    border: none;
-    
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    
-    cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-    z-index: 1000; /* Keeps the button clickable when login is open */
+    z-index: 99999;
 }
 
-.notification-btn:active {
-    transform: scale(0.92);
-    background: rgba(255, 255, 255, 0.5);
+/* --- SCROLLABLE CONTAINER LOCKDOWN --- */
+/* The lists need to be explicit about being the only scrollable items */
+.dm-list, .chat-messages {
+    overflow-y: auto;          
+    -webkit-overflow-scrolling: touch; /* Native smooth scroll for iOS */
+    overscroll-behavior: contain; 
+    touch-action: pan-y;       
+    flex: 1; 
 }
 
 /* We declare the variables at the root of the document */
