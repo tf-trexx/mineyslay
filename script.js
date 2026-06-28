@@ -6,7 +6,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 import { 
     getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, 
-    addDoc, onSnapshot, orderBy, serverTimestamp 
+    addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -31,12 +31,47 @@ let activeRecipientUid = null;
 let chatUnsubscribe = null;
 let historyUnsubscribe = null;
 
+// =========================================================================
+// TEMPORARY VIP BIRTHDAY LOGIC (EASY TO DELETE LATER)
+// =========================================================================
+
+// Put all the possible usernames she might create here (must be lowercase)
+const VIP_USERNAMES = ["mineyslay", "mahin", "her_username1", "her_username2"]; 
+
+function handleVIPButtons(username) {
+    const spotBtn = document.getElementById('spotifyBtn');
+    const pinBtn = document.getElementById('pinterestBtn');
+    
+    // If the logged-in user is in our VIP list, show them!
+    if (VIP_USERNAMES.includes(username.toLowerCase())) {
+        spotBtn.style.display = 'flex';
+        pinBtn.style.display = 'flex';
+    } else {
+        spotBtn.style.display = 'none';
+        pinBtn.style.display = 'none';
+    }
+}
+
+// Button Click Events
+document.getElementById('spotifyBtn').addEventListener('click', () => {
+    // Replace with your actual Spotify Playlist link
+    window.open('https://open.spotify.com/playlist/4n40zf4LxSUdcrkWpHFfhw', '_blank'); 
+});
+
+document.getElementById('pinterestBtn').addEventListener('click', () => {
+    // Replace with your actual Pinterest Board link
+    window.open('https://in.pinterest.com/TrxFarhad/_saved', '_blank'); 
+});
+// =========================================================================
+
+
 // --- THE GATEKEEPER NAVIGATION ENGINE ---
 function setView(viewName) {
     document.getElementById('loginWrapper').classList.remove('active');
     document.getElementById('dmWrapper').classList.remove('active');
     document.getElementById('settingsWrapper').classList.remove('active');
     document.getElementById('chatRoom').classList.remove('active');
+    document.getElementById('dropsWrapper').classList.remove('active'); // Added Drops Wrapper
     
     document.getElementById('mainGreeting').classList.add('ui-hidden');
     document.getElementById('mainBottom').classList.add('ui-hidden');
@@ -46,7 +81,9 @@ function setView(viewName) {
         document.getElementById('mainGreeting').classList.remove('ui-hidden');
         document.getElementById('mainBottom').classList.remove('ui-hidden');
         document.getElementById('mainDock').classList.remove('ui-hidden');
+        
         if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+        if (window.dropsUnsubscribe) { window.dropsUnsubscribe(); window.dropsUnsubscribe = null; } // Cleanup Drops memory
     } else {
         document.getElementById(viewName).classList.add('active');
     }
@@ -58,16 +95,26 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         const profileSnap = await getDoc(doc(db, "users", user.uid));
         if (profileSnap.exists()) {
-            document.getElementById('userName').innerText = profileSnap.data().username || "User";
+            const currentUsername = profileSnap.data().username || "User";
+            document.getElementById('userName').innerText = currentUsername;
+            
+            // Trigger the VIP Check!
+            handleVIPButtons(currentUsername); 
         }
         listenToChatHistory();
     } else {
         currentUser = null;
         document.getElementById('userName').innerText = "User";
+        
+        // Hide VIP buttons when someone logs out
+        document.getElementById('spotifyBtn').style.display = 'none';
+        document.getElementById('pinterestBtn').style.display = 'none';
+        
         if (historyUnsubscribe) { historyUnsubscribe(); historyUnsubscribe = null; }
         if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
     }
 });
+
 
 // --- DOCKBAR CONTROLS ---
 document.getElementById('loginBtn').addEventListener('click', () => {
@@ -444,6 +491,182 @@ document.querySelectorAll('.wallpaper-option').forEach(btn => {
 
 
 // =========================================================================
+// THE "DROPS" ENGINE (STACKS & UPLOADS)
+// =========================================================================
+let currentDropsUser = null; 
+let currentDrops = []; 
+
+// Open Drops Interface from Ribbon Button
+document.getElementById('dropsBtn').addEventListener('click', () => {
+    if (!currentUser) return alert("Please login to see and share drops!");
+    loadDropsForUser(currentUser.uid, document.getElementById('userName').innerText);
+    setView('dropsWrapper');
+});
+
+// Load the requested user's drops
+function loadDropsForUser(uid, username) {
+    currentDropsUser = uid;
+    document.getElementById('dropsTitle').innerText = `Dropped by - ${username}`;
+    document.getElementById('dropSearch').value = "";
+    document.getElementById('dropSearchResults').classList.remove('active');
+
+    if (window.dropsUnsubscribe) window.dropsUnsubscribe();
+
+    const dropsRef = collection(db, "users", uid, "drops");
+    const q = query(dropsRef, orderBy("timestamp", "desc"));
+
+    window.dropsUnsubscribe = onSnapshot(q, (snapshot) => {
+        currentDrops = [];
+        snapshot.forEach(d => currentDrops.push({ id: d.id, ...d.data() }));
+        renderDropsStack();
+    });
+}
+
+// Draw the 3D Curvy Stacks
+function renderDropsStack() {
+    const container = document.getElementById('dropsStackContainer');
+    container.innerHTML = "";
+
+    // Show Erase button ONLY if looking at your own drops
+    document.getElementById('eraseDropBtn').style.display = (currentDropsUser === currentUser.uid && currentDrops.length > 0) ? 'block' : 'none';
+
+    if (currentDrops.length === 0) {
+        container.innerHTML = `<div style="color:var(--greeting-color); opacity:0.5; font-size:1.1rem;">No drops yet!</div>`;
+        return;
+    }
+
+    currentDrops.forEach((drop, index) => {
+        const card = document.createElement('div');
+        card.className = 'drop-card';
+        
+        // Stack Math: Make cards smaller and push them higher the further back they are
+        const reverseIndex = currentDrops.length - index; 
+        const scale = Math.max(0.75, 1 - (index * 0.08));
+        const translateY = index * -30; 
+        
+        card.style.zIndex = reverseIndex;
+        card.style.transform = `translateY(${translateY}px) scale(${scale})`;
+        if (index > 3) card.style.opacity = '0'; // Hide cards deep in the deck for performance
+
+        card.innerHTML = `<img src="${drop.imageUrl}" alt="Drop">`;
+        
+        // Tap to cycle cards!
+        card.addEventListener('click', () => {
+            if (index === 0 && currentDrops.length > 1) {
+                // Takes the top card and shoves it to the back of the deck
+                const topCard = currentDrops.shift();
+                currentDrops.push(topCard);
+                renderDropsStack(); 
+            }
+        });
+
+        container.appendChild(card);
+    });
+}
+
+// Upload a new Drop (PickNclick)
+document.getElementById('pickNclickBtn').addEventListener('click', () => {
+    if (currentDropsUser !== currentUser.uid) {
+        // If they try to upload while looking at someone else, force them back to their own profile first
+        loadDropsForUser(currentUser.uid, document.getElementById('userName').innerText);
+    }
+    document.getElementById('dropFileInput').click();
+});
+
+document.getElementById('dropFileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const btn = document.getElementById('pickNclickBtn');
+    btn.innerText = "Uploading... ⏳";
+    
+    try {
+        const fd = new FormData(); fd.append("image", file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.success) {
+            await addDoc(collection(db, "users", currentUser.uid, "drops"), {
+                imageUrl: data.data.url,
+                timestamp: serverTimestamp()
+            });
+        }
+    } catch (err) { alert("Upload failed: " + err.message); }
+    
+    btn.innerText = "PickNclick 📷";
+    e.target.value = ""; 
+});
+
+// Erase the top Drop
+document.getElementById('eraseDropBtn').addEventListener('click', async () => {
+    if (currentDrops.length === 0 || currentDropsUser !== currentUser.uid) return;
+    if (!confirm("Erase this drop forever?")) return;
+
+    // Erase whichever card is currently on top of the deck
+    const topDrop = currentDrops[0]; 
+    try { await deleteDoc(doc(db, "users", currentUser.uid, "drops", topDrop.id)); } 
+    catch (err) { console.error("Failed to delete", err); }
+});
+
+// Search for other users' Drops
+const dropSearchInput = document.getElementById('dropSearch');
+const dropSearchResults = document.getElementById('dropSearchResults');
+
+dropSearchInput.addEventListener('input', async (e) => {
+    const queryStr = e.target.value.trim().toLowerCase();
+    if (!queryStr) return dropSearchResults.classList.remove('active');
+
+    try {
+        const usersRef = collection(db, "users");
+        let results = [];
+        
+        const qUsername = query(usersRef, where("username", "==", queryStr));
+        const snapU = await getDocs(qUsername);
+        snapU.forEach(d => { results.push({ uid: d.id, ...d.data() }) });
+
+        // Partial match searching
+        if (results.length === 0 && queryStr.length >= 2) {
+            const qPrefix = query(usersRef, where("username", ">=", queryStr), where("username", "<=", queryStr + '\uf8ff'));
+            const snapP = await getDocs(qPrefix);
+            snapP.forEach(d => { if (!results.some(r => r.uid === d.id)) results.push({ uid: d.id, ...d.data() }); });
+        }
+        
+        // Render Search Results
+        dropSearchResults.innerHTML = "";
+        if (results.length === 0) {
+            dropSearchResults.innerHTML = `<div style="padding:10px; color:var(--greeting-color); text-align:center;">No users found</div>`;
+        } else {
+            results.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'dm-user-item'; 
+                item.style.padding = "10px";
+                item.innerHTML = `
+                    <div class="dm-avatar" style="width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <img src="${user.pfpUrl || 'cloud.png'}" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div class="dm-username" style="margin-left:10px; font-size:1rem; color:var(--greeting-color); font-weight:600;">
+                        ${user.username}
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    loadDropsForUser(user.uid, user.username);
+                    dropSearchInput.value = "";
+                    dropSearchResults.classList.remove('active');
+                });
+                dropSearchResults.appendChild(item);
+            });
+        }
+        dropSearchResults.classList.add('active');
+    } catch (err) { console.error("Drop search error:", err); }
+});
+
+// Prevent screen bouncing when typing in search
+dropSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); dropSearchInput.blur(); }
+});
+
+
+// =========================================================================
 // PATCHED: STRICT MOBILE VIEWPORT & BOUNCE LOCK
 // =========================================================================
 
@@ -465,7 +688,8 @@ document.addEventListener('gesturestart', (event) => {
 // 3. Kill Rubber-Band Background Bouncing while keeping Chats scrollable
 document.addEventListener('touchmove', (event) => {
     // Check if the user's finger is currently touching a list that WE want to be scrollable
-    const isInsideScrollableList = event.target.closest('.dm-list, .chat-messages');
+    // --> I ADDED '.drop-search-results' TO THIS LIST SO THE NEW SEARCH BAR WORKS PERFECTLY
+    const isInsideScrollableList = event.target.closest('.dm-list, .chat-messages, .drop-search-results');
     
     // If their finger is NOT inside the chat list or DM list, kill the swipe!
     if (!isInsideScrollableList) {
@@ -487,4 +711,3 @@ document.querySelectorAll('input').forEach(input => {
         }, 100); 
     });
 });
-
