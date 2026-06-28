@@ -22,18 +22,29 @@
     
     <section class="bottom-section" id="mainBottom">
         <div class="vertical-icons">
-            <button class="side-btn" aria-label="Action 1"></button>
-            <button class="side-btn" aria-label="Action 2"></button>
-            <button class="side-btn" aria-label="Action 3"></button>
+            
+            <!-- TEMPORARY BIRTHDAY BUTTONS (Hidden by default) -->
+            <button class="side-btn" id="spotifyBtn" aria-label="Spotify" style="display: none;">
+                <img src="spotify.png" alt="Spotify">
+            </button>
+            
+            <button class="side-btn" id="pinterestBtn" aria-label="Pinterest" style="display: none;">
+                <img src="pinterest.png" alt="Pinterest">
+            </button>
+            
+            <!-- Your 3rd normal button (you can delete this if you only want 2 buttons total) -->
+            <button class="side-btn" id="extraBtn" aria-label="Action 3" style="display: none;"></button>
+            
         </div>
     </section>
+
 
     <nav class="dockbar" id="mainDock">
         <button class="dock-btn" id="loginBtn" aria-label="Cloud feature">
             <img src="cloud.png" alt="Cloud">
         </button>
         
-        <button class="dock-btn" aria-label="Ribbon feature">
+        <button class="dock-btn" id="dropsBtn"    aria-label="Ribbon feature">
             <img src="ribbon.png" alt="Ribbon">
         </button>
         
@@ -107,6 +118,35 @@
             <button class="login-submit" id="saveSettingsBtn">Save Profile</button>
             <button class="logout-btn" id="logoutBtn">Log Out</button>
         </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- PHOTO DROPS INTERFACE (THE STACKS)        -->
+    <!-- ========================================= -->
+    <div class="drops-wrapper" id="dropsWrapper">
+        
+        <div class="drops-header">
+            <h2 class="drops-title" id="dropsTitle">Dropped by - User</h2>
+        </div>
+
+        <!-- The Curvy 3D Stack -->
+        <div class="drops-stack-container" id="dropsStackContainer">
+            <!-- Images get injected here by Javascript -->
+        </div>
+
+        <!-- Search Results Overlay -->
+        <div class="drop-search-results" id="dropSearchResults"></div>
+
+        <!-- Bottom Controls: PickNclick & Erase -->
+        <div class="drops-controls-container">
+            <input type="text" id="dropSearch" class="drop-search-input" placeholder="Search for users..." autocomplete="off">
+            <div class="drop-actions">
+                <button class="drop-action-btn" id="pickNclickBtn">PickNclick 📷</button>
+                <button class="drop-action-btn erase-btn" id="eraseDropBtn">Erase 🗑️</button>
+                <input type="file" id="dropFileInput" accept="image/*" style="display: none;">
+            </div>
+        </div>
+        
     </div>
 
     <!-- ========================================= -->
