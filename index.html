@@ -2,59 +2,81 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- PATCHED: Added maximum-scale and user-scalable rules to kill all zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy Birthday!</title>
+    <title>SlayyX</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
   
     <div class="bg-blur-overlay"></div>
 
-    <main class="top-section">
-        <button class="notification-btn" id="closeBtn" aria-label="Close or Notifications"></button>
+    <!-- NEW TOP CONTROLS: Grouped neatly together -->
+    <div class="top-right-controls">
+        <button class="top-circle-btn" id="socialUserBtn"><img src="user.png" alt="U" onerror="this.style.display='none'"></button>
+        <button class="top-circle-btn" id="socialNotiBtn"><img src="noti.png" alt="N" onerror="this.style.display='none'"></button>
+        <button class="top-circle-btn" id="closeBtn" aria-label="Close"><img src="close.png" alt="X" onerror="this.style.display='none'"></button>
+    </div>
 
+    <main class="top-section">
         <div class="greeting-container" id="mainGreeting">
             <h1 class="greeting-text">Hey,</h1>
             <h2 class="user-name" id="userName">User</h2>
         </div>
     </main>
     
+    <!-- ========================================= -->
+    <!-- GLOBAL THREADS WIDGET (CENTER SCREEN)     -->
+    <!-- ========================================= -->
+    <section class="threads-widget" id="mainThreads">
+        <div class="threads-glass-box" id="threadsGlassBox">
+            <button class="box-toggle-btn" id="toggleThreadsBtn"></button>
+            <div class="threads-header">
+                <img src="clear.png" alt="Public Feed" class="threads-label-icon">
+            </div>
+            <div class="threads-feed" id="threadsFeedContainer">
+                <div style="text-align:center; opacity:0.5; font-size:0.9rem; margin-top:20px;">
+                    Login to view threads
+                </div>
+            </div>
+            
+            <div class="reply-preview-banner" id="replyPreviewBanner" style="display: none;">
+                <div class="reply-preview-content">
+                    <span class="reply-target-name" id="replyTargetName">Replying to...</span>
+                    <span class="reply-target-snippet" id="replyTargetSnippet">Snippet</span>
+                </div>
+                <button id="cancelReplyBtn" class="cancel-reply-btn">✖</button>
+            </div>
+            
+            <div class="threads-input-wrapper">
+                <input type="text" id="threadInput" class="thread-input" placeholder="Drop a thought..." autocomplete="off">
+                <button id="threadSendBtn" class="thread-send">
+                    <img src="send.png" alt="Send">
+                </button>
+            </div>
+
+            <div class="future-quotes-box" id="futureQuotesBox">
+                Quotes coming soon ✨
+            </div>
+        </div>
+    </section>
+    
     <section class="bottom-section" id="mainBottom">
         <div class="vertical-icons">
-            
-            <!-- TEMPORARY BIRTHDAY BUTTONS (Hidden by default) -->
             <button class="side-btn" id="spotifyBtn" aria-label="Spotify" style="display: none;">
                 <img src="spotify.png" alt="Spotify">
             </button>
-            
             <button class="side-btn" id="pinterestBtn" aria-label="Pinterest" style="display: none;">
                 <img src="pinterest.png" alt="Pinterest">
             </button>
-            
-            <!-- Your 3rd normal button (you can delete this if you only want 2 buttons total) -->
             <button class="side-btn" id="extraBtn" aria-label="Action 3" style="display: none;"></button>
-            
         </div>
     </section>
 
-
     <nav class="dockbar" id="mainDock">
-        <button class="dock-btn" id="loginBtn" aria-label="Cloud feature">
-            <img src="cloud.png" alt="Cloud">
-        </button>
-        
-        <button class="dock-btn" id="dropsBtn"    aria-label="Ribbon feature">
-            <img src="ribbon.png" alt="Ribbon">
-        </button>
-        
-        <button class="dock-btn" id="settingsBtn" aria-label="Settings">
-            <img src="settings.png" alt="Settings">
-        </button>
-        
-        <button class="dock-btn" id="wallpaperBtn" aria-label="Change Theme">
-            <img src="theme.png" alt="Theme Settings"> 
-        </button>
+        <button class="dock-btn" id="loginBtn" aria-label="Cloud feature"><img src="cloud.png" alt="Cloud"></button>
+        <button class="dock-btn" id="dropsBtn" aria-label="Ribbon feature"><img src="ribbon.png" alt="Ribbon"></button>
+        <button class="dock-btn" id="settingsBtn" aria-label="Settings"><img src="settings.png" alt="Settings"></button>
+        <button class="dock-btn" id="wallpaperBtn" aria-label="Change Theme"><img src="theme.png" alt="Theme"></button>
     </nav>
 
     <!-- ========================================= -->
@@ -73,50 +95,52 @@
     <!-- DIRECT MESSAGES INTERFACE                 -->
     <!-- ========================================= -->
     <div class="dm-wrapper" id="dmWrapper">
-        
         <div class="dm-header-glass">
             <input type="text" id="dmSearch" class="dm-search" placeholder="Search by username or email..." autocomplete="off">
         </div>
-
         <div class="dm-list" id="dmListContainer"></div>
-
         <div class="chat-room" id="chatRoom">
-            <div class="chat-header">
-                <h3 class="chat-title" id="activeChatTitle">Chat</h3>
-            </div>
-            
+            <div class="chat-header"><h3 class="chat-title" id="activeChatTitle">Chat</h3></div>
             <div class="chat-messages" id="chatMessagesContainer"></div>
-            
             <div class="chat-input-container">
                 <input type="text" id="chatInputField" class="chat-input" placeholder="Type a message..." autocomplete="off">
-                <button class="chat-send" id="chatSendBtn">
-                    <img src="send.png" alt="Send">
-                </button>
+                <button class="chat-send" id="chatSendBtn"><img src="send.png" alt="Send"></button>
             </div>
         </div> 
     </div> 
 
     <!-- ========================================= -->
-    <!-- SETTINGS INTERFACE                        -->
+    <!-- SETTINGS INTERFACE (PROFILE ONLY)         -->
     <!-- ========================================= -->
     <div class="settings-wrapper" id="settingsWrapper">
         <div class="settings-box">
             <h2 class="login-title">Your Profile</h2>
-            
             <div class="pfp-section">
-                <div class="pfp-circle">
-                    <img src="cloud.png" id="pfpPreview" alt="Profile Picture">
-                </div>
+                <div class="pfp-circle"><img src="cloud.png" id="pfpPreview" alt="Profile Picture"></div>
                 <input type="file" id="pfpInput" accept="image/*" style="display: none;">
                 <button class="change-pfp-btn" id="changePfpBtn">Change Avatar</button>
             </div>
-            
             <div class="username-section">
                 <input type="text" id="usernameInput" class="login-input" placeholder="Unique Username" autocomplete="off">
             </div>
-            
             <button class="login-submit" id="saveSettingsBtn">Save Profile</button>
             <button class="logout-btn" id="logoutBtn">Log Out</button>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- NEW: SOCIAL HUB (FRIENDS, SEARCH, NOTIFS) -->
+    <!-- ========================================= -->
+    <div class="social-wrapper" id="socialWrapper">
+        <div class="social-box">
+            <div class="social-tabs">
+                <button class="social-tab active" data-tab="search">Search</button>
+                <button class="social-tab" data-tab="friends">Friends</button>
+                <button class="social-tab" data-tab="requests">Requests</button>
+            </div>
+            <div class="social-content" id="socialContentArea">
+                <!-- Content injected here by Javascript -->
+            </div>
         </div>
     </div>
 
@@ -124,20 +148,11 @@
     <!-- PHOTO DROPS INTERFACE (THE STACKS)        -->
     <!-- ========================================= -->
     <div class="drops-wrapper" id="dropsWrapper">
-        
         <div class="drops-header">
             <h2 class="drops-title" id="dropsTitle">Dropped by - User</h2>
         </div>
-
-        <!-- The Curvy 3D Stack -->
-        <div class="drops-stack-container" id="dropsStackContainer">
-            <!-- Images get injected here by Javascript -->
-        </div>
-
-        <!-- Search Results Overlay -->
+        <div class="drops-stack-container" id="dropsStackContainer"></div>
         <div class="drop-search-results" id="dropSearchResults"></div>
-
-        <!-- Bottom Controls: PickNclick & Erase -->
         <div class="drops-controls-container">
             <input type="text" id="dropSearch" class="drop-search-input" placeholder="Search for users..." autocomplete="off">
             <div class="drop-actions">
@@ -146,7 +161,6 @@
                 <input type="file" id="dropFileInput" accept="image/*" style="display: none;">
             </div>
         </div>
-        
     </div>
 
     <!-- ========================================= -->
