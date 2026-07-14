@@ -178,11 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === document.getElementById('themeModal')) document.getElementById('themeModal').classList.remove('active');
     });
     
+    // NEW: Contains the 4 new wallpapers with matching color palettes.
     const themeMap = {
         'beige.jpg': { text: '#4A4036', bgSolid: '#F9F6F0', bgSurface: '#FFFFFF', bgHover: '#EBE4DA' },
         'black.jpg': { text: '#D9C8B8', bgSolid: '#1C1C1E', bgSurface: '#2C2C2E', bgHover: '#3A3A3C' },
         'white.jpg': { text: '#5C5046', bgSolid: '#F5F5F7', bgSurface: '#FFFFFF', bgHover: '#E8E8ED' },
-        'pink.jpg': { text: '#6B4C4A', bgSolid: '#FDF6F7', bgSurface: '#FFFFFF', bgHover: '#F7E5E6' }
+        'pink.jpg': { text: '#6B4C4A', bgSolid: '#FDF6F7', bgSurface: '#FFFFFF', bgHover: '#F7E5E6' },
+        'crimson.jpg': { text: '#F4D9E0', bgSolid: '#3E0B19', bgSurface: '#4F1223', bgHover: '#63182D' },
+        'ocean.jpg': { text: '#D9E2F4', bgSolid: '#0C1631', bgSurface: '#15254A', bgHover: '#1C3160' },
+        'rexgreen.jpg': { text: '#F0F4EB', bgSolid: '#545C44', bgSurface: '#656E54', bgHover: '#747E61' },
+        'cookiegreen.jpg': { text: '#404F43', bgSolid: '#F2F6F3', bgSurface: '#FFFFFF', bgHover: '#E4EAE5' }
     };
 
     document.querySelectorAll('.wallpaper-option').forEach(btn => {
@@ -435,7 +440,7 @@ onAuthStateChanged(auth, async (user) => {
             // Temporary VIP Logic
             const spotBtn = document.getElementById('spotifyBtn');
             const pinBtn = document.getElementById('pinterestBtn');
-            const VIP_USERNAMES = ["mineyslay", "mahin", "her_username1", "her_username2"]; 
+            const VIP_USERNAMES = ["mahinxyz", "mahin", "her_username1", "her_username2"]; 
             if(spotBtn && pinBtn) {
                 if (VIP_USERNAMES.includes(currentUsername.toLowerCase())) {
                     spotBtn.style.display = 'flex'; pinBtn.style.display = 'flex';
