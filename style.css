@@ -61,7 +61,7 @@ body {
 .cancel-reply-btn { background: none; border: none; color: var(--greeting-color); font-size: 1.1rem; cursor: pointer; opacity: 0.6; padding-left: 15px; }
 .cancel-reply-btn:active { transform: scale(0.9); opacity: 1; }
 .threads-input-wrapper { padding: 12px 15px; background: rgba(255, 255, 255, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.3); display: flex; gap: 10px; align-items: center; }
-.thread-input { flex: 1; padding: 12px 15px; border: none; border-radius: 20px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03); font-size: 0.9rem; font-family: inherit; color: var(--greeting-color); outline: none; }
+.thread-input { flex: 1; padding: 12px 15px; border: none; border-radius: 20px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03); font-size: 0.9rem; font-family: inherit; outline: none; }
 .thread-input::placeholder { color: rgba(74, 64, 54, 0.5); }
 .thread-send { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--greeting-color); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); transition: transform 0.2s ease; }
 .thread-send:active { transform: scale(0.9); }
@@ -86,14 +86,48 @@ body {
 .dock-btn img, .side-btn img { width: 55%; height: 55%; object-fit: contain; }
 
 /* ========================================= */
-/* WALLPAPER MODAL                           */
+/* WALLPAPER MODAL (2 COLUMNS, CIRCLES)      */
 /* ========================================= */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .modal-overlay.active { opacity: 1; pointer-events: all; }
-.modal-content { width: 65%; max-width: 320px; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 35px; padding: 25px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); display: grid; grid-template-columns: 1fr 1fr; gap: 15px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+.modal-content { 
+    width: 70%; max-width: 280px; 
+    background: rgba(255, 255, 255, 0.6); 
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 35px; 
+    padding: 25px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); 
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+    transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
 .modal-overlay.active .modal-content { transform: scale(1); }
-.wallpaper-option { aspect-ratio: 1; border-radius: 20px; border: none; background: rgba(255, 255, 255, 0.5); font-size: 1.2rem; font-weight: 600; color: #4A4036; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: transform 0.2s ease; }
+
+.wallpaper-option { 
+    position: relative;
+    aspect-ratio: 1.25; border-radius: 18px; border: none; 
+    background: rgba(255, 255, 255, 0.5); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+    cursor: pointer; transition: transform 0.2s ease; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 0; color: transparent; 
+}
 .wallpaper-option:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.8); }
+
+.wallpaper-option::after {
+    content: ""; position: absolute; width: 35%; aspect-ratio: 1; border-radius: 50%;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.wallpaper-option[data-bg="black.jpg"]::after { background-color: #1C1C1E; }
+.wallpaper-option[data-bg="white.jpg"]::after { background-color: #F5F5F7; border: 1px solid rgba(0,0,0,0.1); }
+.wallpaper-option[data-bg="pink.jpg"]::after { background-color: #F7E5E6; border: 1px solid rgba(0,0,0,0.05); }
+.wallpaper-option[data-bg="beige.jpg"]::after { background-color: #EBE4DA; border: 1px solid rgba(0,0,0,0.05); }
+.wallpaper-option[data-bg="crimson.jpg"]::after { background-color: #3E0B19; }
+.wallpaper-option[data-bg="ocean.jpg"]::after { background-color: #0C1631; }
+.wallpaper-option[data-bg="rexgreen.jpg"]::after { background-color: #545C44; }
+.wallpaper-option[data-bg="cookiegreen.jpg"]::after { background-color: #404F43; border: 1px solid rgba(0,0,0,0.1); }
+
 
 /* ========================================= */
 /* SHARED INTERFACE (LOGIN, SETTINGS, SOCIAL)*/
@@ -123,7 +157,7 @@ body {
 .social-tabs { display: flex; gap: 5px; width: 100%; background: rgba(255, 255, 255, 0.4); padding: 5px; border-radius: 25px; margin-bottom: 15px; flex-shrink: 0; }
 .social-tab { flex: 1; padding: 10px 0; border: none; background: transparent; border-radius: 20px; font-weight: 600; font-family: inherit; cursor: pointer; opacity: 0.6; transition: background 0.2s, opacity 0.2s; }
 .social-tab.active { background: rgba(255, 255, 255, 0.8); opacity: 1; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.social-content { flex: 1; width: 100%; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 20px; }
+.social-content { flex: 1; width: 100%; display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 20px; gap: 10px; }
 .social-content::-webkit-scrollbar { display: none; }
 .social-content { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -137,7 +171,7 @@ body {
 .ig-btn-secondary:active { transform: scale(0.95); }
 .ig-back-btn { align-self: flex-start; background: none; border: none; font-weight: 600; font-size: 1rem; cursor: pointer; margin-bottom: 10px; opacity: 0.7; }
 
-.req-item { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(255, 255, 255, 0.5); border-radius: 20px; margin-bottom: 10px; }
+.req-item { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(255, 255, 255, 0.5); border-radius: 20px; }
 .req-avatar { width: 45px; height: 45px; border-radius: 15px; object-fit: cover; flex-shrink: 0; }
 .req-info { flex: 1; display: flex; flex-direction: column; }
 .req-name { font-weight: 600; font-size: 0.95rem; }
@@ -150,12 +184,9 @@ body {
 /* ========================================= */
 /* STRICT FIX: PURE BLACK TEXT IN GLASS BOXES*/
 /* ========================================= */
-.login-title, .login-input, .dm-username, .ig-username, .req-name, .req-time, 
+.login-title, .ig-username, .req-name, .req-time, 
 .social-tab, .ig-back-btn, .change-pfp-btn, .logout-btn {
     color: #111111 !important; 
-}
-.login-input::placeholder, .social-box input::placeholder, .dm-search::placeholder {
-    color: rgba(17, 17, 17, 0.5) !important;
 }
 .ig-btn-secondary, .req-btn.decline, .logout-btn {
     color: #111111 !important;
@@ -165,12 +196,20 @@ body {
     background: #111111 !important;
     color: #FFFFFF !important;
 }
-/* Ensure dark mode colors still apply to outside elements */
-.thread-input, .dm-search, .drop-search-input, .chat-input, .drops-title, .chat-title {
+
+/* Titles outside the glass boxes should keep theme colors */
+.drops-title, .chat-title {
     color: var(--greeting-color) !important;
 }
-.thread-input::placeholder, .dm-search::placeholder, .drop-search-input::placeholder, .chat-input::placeholder {
-    color: color-mix(in srgb, var(--greeting-color) 60%, transparent) !important;
+
+/* ========================================= */
+/* ALL INPUT BOXES (TEXT & PLACEHOLDERS)     */
+/* ========================================= */
+.login-input, .thread-input, .dm-search, .drop-search-input, .chat-input, #socialSearchInput {
+    color: #111111 !important; 
+}
+.login-input::placeholder, .thread-input::placeholder, .dm-search::placeholder, .drop-search-input::placeholder, .chat-input::placeholder, #socialSearchInput::placeholder {
+    color: rgba(17, 17, 17, 0.5) !important;
 }
 
 
@@ -182,8 +221,12 @@ body {
 .dm-header-glass { position: relative; top: 0; padding: 70px 20px 20px; background: color-mix(in srgb, var(--bg-solid) 70%, transparent); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); z-index: 10; }
 .dm-search { width: 100%; padding: 15px 20px; border: none; border-radius: 25px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03), 0 4px 15px rgba(0, 0, 0, 0.02); font-size: 1rem; font-family: inherit; outline: none; }
 .dm-list { padding: 20px; display: flex; flex-direction: column; gap: 10px; height: calc(100vh - 120px); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
-.dm-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--bg-surface); border-radius: 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02); cursor: pointer; transition: transform 0.2s ease; }
+
+/* THEME TEXT COLOR: Forces the items to use the beautiful dynamic theme color instead of black */
+.dm-user-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--bg-surface); color: var(--greeting-color); border-radius: 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02); cursor: pointer; transition: transform 0.2s ease; }
 .dm-user-item:active { transform: scale(0.97); background: var(--bg-hover); }
+.dm-username { font-size: 1.2rem; font-weight: 600; color: var(--greeting-color); }
+
 .dm-avatar { width: 50px; height: 50px; border-radius: 18px; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .dm-avatar img { width: 60%; height: 60%; object-fit: contain; }
 
@@ -236,3 +279,27 @@ body.typing-mode .top-right-controls { opacity: 0 !important; pointer-events: no
 /* Push standard content safely up */
 body.typing-mode .threads-widget { padding-bottom: 20px !important; }
 body.typing-mode .top-section { padding-top: 20px !important; }
+
+/* ========================================= */
+/* DARK THEMES FIX (SENT MESSAGES & BUTTON)  */
+/* ========================================= */
+
+/* Fix 1: Make Sent Message Text Dark and Readable */
+body[style*="black.jpg"] .message.sent,
+body[style*="crimson.jpg"] .message.sent,
+body[style*="ocean.jpg"] .message.sent,
+body[style*="rexgreen.jpg"] .message.sent {
+    color: var(--bg-solid) !important;
+}
+
+/* Fix 2: Make Send Button Background Dark so the white icon pops */
+body[style*="black.jpg"] .chat-send,
+body[style*="crimson.jpg"] .chat-send,
+body[style*="ocean.jpg"] .chat-send,
+body[style*="rexgreen.jpg"] .chat-send,
+body[style*="black.jpg"] .thread-send,
+body[style*="crimson.jpg"] .thread-send,
+body[style*="ocean.jpg"] .thread-send,
+body[style*="rexgreen.jpg"] .thread-send {
+    background: var(--bg-surface) !important;
+}
