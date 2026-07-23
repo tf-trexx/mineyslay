@@ -26,6 +26,7 @@ const IMGBB_API_KEY = "10efd26456f3b6292712d1f035f64198";
 
 // --- CONTEXT VARIABLES ---
 let currentUser = null;
+let currentUserPfp = "cloud.png";
 let activeChatId = null;
 let activeRecipientUid = null;
 let chatUnsubscribe = null;
@@ -36,6 +37,12 @@ let currentDropsUser = null;
 let currentDrops = []; 
 let currentReplyTarget = null;
 let currentReplySnippet = null;
+
+// --- NEW: DELETE MODE STATE & ADMIN POWERS ---
+let isDeleteMode = false;
+let selectedThreadsForDelete = new Set();
+// Add any usernames here that should have the power to delete anyone's threads!
+const ADMIN_USERNAMES = ["trexx", "mahinxyz"]; 
 
 // =========================================================================
 // THE GATEKEEPER NAVIGATION ENGINE
@@ -67,7 +74,7 @@ function setView(viewName) {
 }
 
 // =========================================================================
-// TIME AGO FORMATTER (For Notifications)
+// TIME AGO FORMATTER
 // =========================================================================
 function timeAgo(firebaseTimestamp) {
     if (!firebaseTimestamp) return "Just now";
@@ -83,39 +90,87 @@ function timeAgo(firebaseTimestamp) {
 }
 
 // =========================================================================
-// DOM CONTENT LOADED: ATTACH ALL EVENT LISTENERS SAFELY
+// DOM CONTENT LOADED
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- FIX 3: THE GLOBAL TYPING LISTENER (Catches Everything!) ---
     document.addEventListener('focusin', (e) => {
-        if (e.target.tagName === 'INPUT') {
-            document.body.classList.add('typing-mode');
-        }
+        if (e.target.tagName === 'INPUT') { document.body.classList.add('typing-mode'); }
     });
 
     document.addEventListener('focusout', (e) => {
         if (e.target.tagName === 'INPUT') {
             document.body.classList.remove('typing-mode');
-            setTimeout(() => { 
-                window.scrollTo(0, 0); 
-                document.body.scrollTop = 0; 
-                document.documentElement.scrollTop = 0; 
-            }, 100); 
+            setTimeout(() => { window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0; }, 100); 
         }
     });
 
-    // --- TOP RIGHT CONTROLS (Social & Close) ---
+    // --- MULTI-DELETE MODE CONTROLS ---
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const executeDeleteBtn = document.getElementById('executeDeleteBtn');
+    const threadInput = document.getElementById('threadInput');
+    const threadSendBtn = document.getElementById('threadSendBtn');
+    const deleteActionBar = document.getElementById('deleteActionBar');
+
+    deleteModeBtn?.addEventListener('click', () => {
+        if (!currentUser) return alert("Please login first to delete threads.");
+        
+        isDeleteMode = true;
+        selectedThreadsForDelete.clear();
+        document.body.classList.add('delete-mode-active');
+        
+        // Hide standard input, show Frosted Delete UI
+        if(threadInput) threadInput.style.display = 'none';
+        if(threadSendBtn) threadSendBtn.style.display = 'none';
+        if(deleteActionBar) deleteActionBar.style.display = 'flex';
+        if(executeDeleteBtn) executeDeleteBtn.innerText = 'Delete (0)';
+    });
+
+    cancelDeleteBtn?.addEventListener('click', () => {
+        isDeleteMode = false;
+        selectedThreadsForDelete.clear();
+        document.body.classList.remove('delete-mode-active');
+        
+        // Hide Frosted Delete UI, show standard input
+        if(threadInput) threadInput.style.display = '';
+        if(threadSendBtn) threadSendBtn.style.display = '';
+        if(deleteActionBar) deleteActionBar.style.display = 'none';
+        
+        // Remove visual selection borders from threads
+        document.querySelectorAll('.selected-for-delete').forEach(el => el.classList.remove('selected-for-delete'));
+    });
+
+    executeDeleteBtn?.addEventListener('click', async () => {
+        if (selectedThreadsForDelete.size === 0) return;
+        
+        if (!confirm(`Are you sure you want to permanently delete ${selectedThreadsForDelete.size} threads?`)) return;
+        
+        executeDeleteBtn.innerText = "Deleting...";
+        try {
+            // Loop through selected IDs and delete them from Firestore
+            for (let id of selectedThreadsForDelete) {
+                await deleteDoc(doc(db, "global_threads", id));
+            }
+            // Auto-cancel to exit mode smoothly after successful deletion
+            cancelDeleteBtn.click(); 
+        } catch (e) {
+            console.error("Error deleting threads:", e);
+            alert("Error deleting threads. Please try again.");
+            executeDeleteBtn.innerText = `Delete (${selectedThreadsForDelete.size})`;
+        }
+    });
+
+
+    // --- STANDARD BUTTON LISTENERS ---
     document.getElementById('socialUserBtn')?.addEventListener('click', () => {
         if (!currentUser) return alert("Please login first!");
-        setView('socialWrapper');
-        loadSocialTab('search');
+        setView('socialWrapper'); loadSocialTab('search');
     });
 
     document.getElementById('socialNotiBtn')?.addEventListener('click', () => {
         if (!currentUser) return alert("Please login first!");
-        setView('socialWrapper');
-        loadSocialTab('requests');
+        setView('socialWrapper'); loadSocialTab('requests');
     });
 
     document.getElementById('closeBtn')?.addEventListener('click', () => {
@@ -130,31 +185,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- SOCIAL TABS LOGIC ---
     document.querySelectorAll('.social-tab').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            loadSocialTab(e.target.getAttribute('data-tab'));
-        });
+        btn.addEventListener('click', (e) => { loadSocialTab(e.target.getAttribute('data-tab')); });
     });
 
-    // --- DOCKBAR CONTROLS ---
     document.getElementById('loginBtn')?.addEventListener('click', () => {
         if (currentUser) {
             const dmSearch = document.getElementById('dmSearch');
             if(dmSearch) dmSearch.value = ""; 
             listenToChatHistory();
             setView('dmWrapper');
-        } else {
-            setView('loginWrapper');
-        }
+        } else { setView('loginWrapper'); }
     });
 
     document.getElementById('settingsBtn')?.addEventListener('click', async () => {
-        if (!currentUser) {
-            alert("Please login first to access your profile!");
-            setView('loginWrapper'); 
-            return;
-        }
+        if (!currentUser) { alert("Please login first to access your profile!"); setView('loginWrapper'); return; }
         document.getElementById('usernameInput').value = "";
         document.getElementById('pfpPreview').src = "cloud.png";
         setView('settingsWrapper');
@@ -172,13 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setView('dropsWrapper');
     });
 
-    // --- WALLPAPER / THEME ---
-    document.getElementById('wallpaperBtn')?.addEventListener('click', () => document.getElementById('themeModal').classList.add('active'));
-    document.getElementById('themeModal')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('themeModal')) document.getElementById('themeModal').classList.remove('active');
-    });
-    
-    // NEW: Contains the 4 new wallpapers with matching color palettes.
+    // --- NEW: WALLPAPER PERSISTENCE ---
     const themeMap = {
         'beige.jpg': { text: '#4A4036', bgSolid: '#F9F6F0', bgSurface: '#FFFFFF', bgHover: '#EBE4DA' },
         'black.jpg': { text: '#D9C8B8', bgSolid: '#1C1C1E', bgSurface: '#2C2C2E', bgHover: '#3A3A3C' },
@@ -190,20 +229,35 @@ document.addEventListener('DOMContentLoaded', () => {
         'cookiegreen.jpg': { text: '#404F43', bgSolid: '#F2F6F3', bgSurface: '#FFFFFF', bgHover: '#E4EAE5' }
     };
 
+    function applyTheme(bg) {
+        document.body.style.backgroundImage = `url('${bg}')`;
+        const t = themeMap[bg] || themeMap['beige.jpg'];
+        document.documentElement.style.setProperty('--greeting-color', t.text);
+        document.documentElement.style.setProperty('--bg-solid', t.bgSolid);
+        document.documentElement.style.setProperty('--bg-surface', t.bgSurface);
+        document.documentElement.style.setProperty('--bg-hover', t.bgHover);
+        
+        // Save the chosen wallpaper to the user's browser storage
+        localStorage.setItem('savedWallpaper', bg);
+    }
+
+    // Load saved wallpaper on startup (if it exists)
+    const savedWallpaper = localStorage.getItem('savedWallpaper');
+    if (savedWallpaper) applyTheme(savedWallpaper);
+
+    document.getElementById('wallpaperBtn')?.addEventListener('click', () => document.getElementById('themeModal').classList.add('active'));
+    document.getElementById('themeModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('themeModal')) document.getElementById('themeModal').classList.remove('active');
+    });
+
     document.querySelectorAll('.wallpaper-option').forEach(btn => {
         btn.addEventListener('click', () => {
             const bg = btn.getAttribute('data-bg');
-            document.body.style.backgroundImage = `url('${bg}')`;
-            const t = themeMap[bg] || themeMap['beige.jpg'];
-            document.documentElement.style.setProperty('--greeting-color', t.text);
-            document.documentElement.style.setProperty('--bg-solid', t.bgSolid);
-            document.documentElement.style.setProperty('--bg-surface', t.bgSurface);
-            document.documentElement.style.setProperty('--bg-hover', t.bgHover);
+            applyTheme(bg);
             document.getElementById('themeModal').classList.remove('active');
         });
     });
 
-    // --- AUTHENTICATION MODULE ---
     document.getElementById('submitLogin')?.addEventListener('click', async () => {
         const loginInput = document.getElementById('emailInput').value.trim().toLowerCase();
         const password = document.getElementById('passInput').value;
@@ -245,7 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { alert(e.message); }
     });
 
-    // --- PROFILE SAVING ---
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     saveSettingsBtn?.addEventListener('click', async () => {
         if (!currentUser) return;
@@ -259,9 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const q = query(collection(db, "users"), where("username", "==", username));
             const snap = await getDocs(q);
             if (!snap.empty && snap.docs[0].id !== currentUser.uid) {
-                alert("This username is already taken!");
-                saveSettingsBtn.innerText = "Save Profile";
-                return;
+                alert("This username is already taken!"); saveSettingsBtn.innerText = "Save Profile"; return;
             }
 
             let pfpUrl = document.getElementById('pfpPreview').src;
@@ -274,6 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await setDoc(doc(db, "users", currentUser.uid), { username: username, pfpUrl: pfpUrl, email: currentUser.email }, { merge: true });
             document.getElementById('userName').innerText = username; 
+            currentUserPfp = pfpUrl; 
             alert("Profile saved successfully!");
         } catch (e) { alert("Error: " + e.message); }
         saveSettingsBtn.innerText = "Save Profile";
@@ -283,31 +335,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pfpInput')?.addEventListener('change', (e) => {
         if (e.target.files[0]) {
             const reader = new FileReader();
-            reader.onload = (ev) => {
-                const pfp = document.getElementById('pfpPreview');
-                if(pfp) pfp.src = ev.target.result;
-            };
+            reader.onload = (ev) => { const pfp = document.getElementById('pfpPreview'); if(pfp) pfp.src = ev.target.result; };
             reader.readAsDataURL(e.target.files[0]);
         }
     });
 
-    // --- THREADS CONTROLS ---
-    document.getElementById('toggleThreadsBtn')?.addEventListener('click', () => {
-        document.getElementById('threadsGlassBox').classList.toggle('flipped');
-    });
-
+    document.getElementById('toggleThreadsBtn')?.addEventListener('click', () => { document.getElementById('threadsGlassBox').classList.toggle('flipped'); });
     document.getElementById('threadSendBtn')?.addEventListener('click', postGlobalThread);
-    document.getElementById('threadInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') postGlobalThread();
-    });
+    document.getElementById('threadInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') postGlobalThread(); });
 
     document.getElementById('cancelReplyBtn')?.addEventListener('click', () => {
-        currentReplyTarget = null;
-        currentReplySnippet = null;
+        currentReplyTarget = null; currentReplySnippet = null;
         document.getElementById('replyPreviewBanner').style.display = 'none';
     });
 
-    // --- DIRECT MESSAGES (CHAT) CONTROLS ---
     document.getElementById('chatSendBtn')?.addEventListener('click', executeSendMessage);
     document.getElementById('chatInputField')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') executeSendMessage(); });
 
@@ -347,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- PHOTO DROPS CONTROLS ---
     document.getElementById('pickNclickBtn')?.addEventListener('click', () => {
         if (currentDropsUser !== currentUser.uid) loadDropsForUser(currentUser.uid, document.getElementById('userName').innerText);
         document.getElementById('dropFileInput').click();
@@ -357,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if (!file) return;
         const btn = document.getElementById('pickNclickBtn');
-        btn.innerText = "Uploading... ⏳";
+        btn.innerHTML = 'Uploading... <img src="cam.png" alt="cam">'; 
         
         try {
             const fd = new FormData(); fd.append("image", file);
@@ -366,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) await addDoc(collection(db, "users", currentUser.uid, "drops"), { imageUrl: data.data.url, timestamp: serverTimestamp() });
         } catch (err) { alert("Upload failed: " + err.message); }
         
-        btn.innerText = "PickNclick 📷";
+        btn.innerHTML = 'PickNclick <img src="cam.png" alt="cam">'; 
         e.target.value = ""; 
     });
 
@@ -425,19 +465,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// =========================================================================
-// CORE GLOBAL AUTH LISTENER
-// =========================================================================
 onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) {
         currentUser = user;
         const profileSnap = await getDoc(doc(db, "users", user.uid));
         if (profileSnap.exists()) {
             const currentUsername = profileSnap.data().username || "User";
+            currentUserPfp = profileSnap.data().pfpUrl || "cloud.png";
+            
             const userNameEl = document.getElementById('userName');
             if(userNameEl) userNameEl.innerText = currentUsername;
             
-            // Temporary VIP Logic
             const spotBtn = document.getElementById('spotifyBtn');
             const pinBtn = document.getElementById('pinterestBtn');
             const VIP_USERNAMES = ["mahinxyz", "mahin", "her_username1", "her_username2"]; 
@@ -449,10 +487,9 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
         }
-        listenToChatHistory();
-        listenToGlobalThreads(); 
+        listenToChatHistory(); listenToGlobalThreads(); 
     } else {
-        currentUser = null;
+        currentUser = null; currentUserPfp = "cloud.png";
         const userNameEl = document.getElementById('userName');
         if(userNameEl) userNameEl.innerText = "User";
         
@@ -470,10 +507,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-
-// =========================================================================
-// SOCIAL ENGINE (Search, Friends, Requests)
-// =========================================================================
 function loadSocialTab(tabName) {
     document.querySelectorAll('.social-tab').forEach(b => b.classList.remove('active'));
     const targetTab = document.querySelector(`.social-tab[data-tab="${tabName}"]`);
@@ -483,10 +516,7 @@ function loadSocialTab(tabName) {
     if(!content) return;
     content.innerHTML = '';
     
-    if (socialRequestsUnsubscribe) {
-        socialRequestsUnsubscribe(); 
-        socialRequestsUnsubscribe = null;
-    }
+    if (socialRequestsUnsubscribe) { socialRequestsUnsubscribe(); socialRequestsUnsubscribe = null; }
 
     if (tabName === 'search') {
         content.innerHTML = `
@@ -533,12 +563,8 @@ function loadSocialTab(tabName) {
             });
         }
     } 
-    else if (tabName === 'friends') {
-        renderFriendsTab(content);
-    } 
-    else if (tabName === 'requests') {
-        renderRequestsTab(content);
-    }
+    else if (tabName === 'friends') { renderFriendsTab(content); } 
+    else if (tabName === 'requests') { renderRequestsTab(content); }
 }
 
 async function renderFriendsTab(content) {
@@ -548,8 +574,7 @@ async function renderFriendsTab(content) {
         const friendsArray = snap.data().friends || [];
         
         if (friendsArray.length === 0) {
-            content.innerHTML = `<div style="text-align:center; opacity:0.5; padding:20px;">No friends added yet.</div>`;
-            return;
+            content.innerHTML = `<div style="text-align:center; opacity:0.5; padding:20px;">No friends added yet.</div>`; return;
         }
 
         content.innerHTML = "";
@@ -564,9 +589,7 @@ async function renderFriendsTab(content) {
                     <div style="font-weight:600; font-size:1.05rem; margin-left:10px; flex:1;" class="dm-username">${user.username}</div>
                     <button class="req-btn decline" style="font-size:0.8rem; width:auto; padding:0 10px; border-radius:15px;">Remove</button>
                 `;
-                item.addEventListener('click', (e) => {
-                    if(!e.target.classList.contains('req-btn')) renderInstagramProfile({uid: friendUid, ...user});
-                });
+                item.addEventListener('click', (e) => { if(!e.target.classList.contains('req-btn')) renderInstagramProfile({uid: friendUid, ...user}); });
                 item.querySelector('.req-btn').addEventListener('click', async () => {
                     if(confirm(`Remove ${user.username} from friends?`)) {
                         await updateDoc(doc(db, "users", currentUser.uid), { friends: arrayRemove(friendUid) });
@@ -587,10 +610,7 @@ function renderRequestsTab(content) {
 
     socialRequestsUnsubscribe = onSnapshot(q, async (snapshot) => {
         content.innerHTML = "";
-        if (snapshot.empty) {
-            content.innerHTML = `<div style="text-align:center; opacity:0.5; padding:20px;">No pending requests.</div>`;
-            return;
-        }
+        if (snapshot.empty) { content.innerHTML = `<div style="text-align:center; opacity:0.5; padding:20px;">No pending requests.</div>`; return; }
 
         for (const requestDoc of snapshot.docs) {
             const data = requestDoc.data();
@@ -617,15 +637,12 @@ function renderRequestsTab(content) {
                     await updateDoc(doc(db, "users", data.from), { friends: arrayUnion(currentUser.uid) });
                     await deleteDoc(doc(db, "friend_requests", requestDoc.id));
                 });
-                document.getElementById(`dec_${requestDoc.id}`).addEventListener('click', async () => {
-                    await deleteDoc(doc(db, "friend_requests", requestDoc.id));
-                });
+                document.getElementById(`dec_${requestDoc.id}`).addEventListener('click', async () => { await deleteDoc(doc(db, "friend_requests", requestDoc.id)); });
             }
         }
     });
 }
 
-// Instagram Style Profile View
 async function renderInstagramProfile(user) {
     const content = document.getElementById('socialContentArea');
     if(!content) return;
@@ -634,29 +651,19 @@ async function renderInstagramProfile(user) {
     const myFriends = meSnap.data().friends || [];
     const isFriend = myFriends.includes(user.uid);
     
-    let isRequestedByMe = false;
-    let isRequestedByThem = false;
-    let reqIdMy = `${currentUser.uid}_${user.uid}`;
-    let reqIdThem = `${user.uid}_${currentUser.uid}`;
+    let isRequestedByMe = false; let isRequestedByThem = false;
+    let reqIdMy = `${currentUser.uid}_${user.uid}`; let reqIdThem = `${user.uid}_${currentUser.uid}`;
 
     if (!isFriend) {
-        const checkMyReq = await getDoc(doc(db, "friend_requests", reqIdMy));
-        if (checkMyReq.exists()) isRequestedByMe = true;
-        
-        const checkThemReq = await getDoc(doc(db, "friend_requests", reqIdThem));
-        if (checkThemReq.exists()) isRequestedByThem = true;
+        const checkMyReq = await getDoc(doc(db, "friend_requests", reqIdMy)); if (checkMyReq.exists()) isRequestedByMe = true;
+        const checkThemReq = await getDoc(doc(db, "friend_requests", reqIdThem)); if (checkThemReq.exists()) isRequestedByThem = true;
     }
 
     let primaryBtnHtml = "";
-    if (isFriend) {
-        primaryBtnHtml = `<button class="ig-btn-secondary" id="igRemoveBtn">Remove Friend</button>`;
-    } else if (isRequestedByMe) {
-        primaryBtnHtml = `<button class="ig-btn-secondary" id="igCancelBtn">Requested</button>`;
-    } else if (isRequestedByThem) {
-        primaryBtnHtml = `<button class="ig-btn-primary" id="igAcceptBtn">Accept Request</button>`;
-    } else {
-        primaryBtnHtml = `<button class="ig-btn-primary" id="igAddBtn">Add Friend</button>`;
-    }
+    if (isFriend) { primaryBtnHtml = `<button class="ig-btn-secondary" id="igRemoveBtn">Remove Friend</button>`; } 
+    else if (isRequestedByMe) { primaryBtnHtml = `<button class="ig-btn-secondary" id="igCancelBtn">Requested</button>`; } 
+    else if (isRequestedByThem) { primaryBtnHtml = `<button class="ig-btn-primary" id="igAcceptBtn">Accept Request</button>`; } 
+    else { primaryBtnHtml = `<button class="ig-btn-primary" id="igAddBtn">Add Friend</button>`; }
 
     let msgBtnHtml = isFriend ? `<button class="ig-btn-primary" id="igMsgBtn">Message</button>` : "";
 
@@ -665,10 +672,7 @@ async function renderInstagramProfile(user) {
             <button class="ig-back-btn" id="igBackBtn">&lt; Back</button>
             <img src="${user.pfpUrl || 'cloud.png'}" class="ig-pfp">
             <h2 class="ig-username">${user.username}</h2>
-            <div class="ig-btn-group">
-                ${primaryBtnHtml}
-                ${msgBtnHtml}
-            </div>
+            <div class="ig-btn-group">${primaryBtnHtml}${msgBtnHtml}</div>
         </div>
     `;
 
@@ -680,10 +684,7 @@ async function renderInstagramProfile(user) {
         renderInstagramProfile(user); 
     });
     
-    document.getElementById('igCancelBtn')?.addEventListener('click', async () => {
-        await deleteDoc(doc(db, "friend_requests", reqIdMy));
-        renderInstagramProfile(user);
-    });
+    document.getElementById('igCancelBtn')?.addEventListener('click', async () => { await deleteDoc(doc(db, "friend_requests", reqIdMy)); renderInstagramProfile(user); });
     
     document.getElementById('igAcceptBtn')?.addEventListener('click', async () => {
         await updateDoc(doc(db, "users", currentUser.uid), { friends: arrayUnion(user.uid) });
@@ -700,16 +701,9 @@ async function renderInstagramProfile(user) {
         }
     });
     
-    document.getElementById('igMsgBtn')?.addEventListener('click', () => {
-        openChatWindow(user.uid, user.username);
-        setView('dmWrapper');
-    });
+    document.getElementById('igMsgBtn')?.addEventListener('click', () => { openChatWindow(user.uid, user.username); setView('dmWrapper'); });
 }
 
-
-// =========================================================================
-// CHAT & MESSAGING ENGINE
-// =========================================================================
 function listenToChatHistory() {
     if (!currentUser) return;
     if (historyUnsubscribe) historyUnsubscribe();
@@ -742,8 +736,7 @@ function renderUserListItems(usersArray, isHistory = false) {
     container.innerHTML = "";
 
     if (usersArray.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--greeting-color); opacity:0.5; font-size: 1rem; pointer-events: none;">No profiles found</div>`;
-        return;
+        container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--greeting-color); opacity:0.5; font-size: 1rem; pointer-events: none;">No profiles found</div>`; return;
     }
 
     usersArray.forEach(user => {
@@ -783,8 +776,7 @@ async function openChatWindow(recipientUid, recipientUsername) {
         document.getElementById('activeChatTitle').innerText = recipientUsername;
         activeChatId = currentUser.uid < recipientUid ? `${currentUser.uid}_${recipientUid}` : `${recipientUid}_${currentUser.uid}`;
         
-        const dmSearch = document.getElementById('dmSearch');
-        if(dmSearch) dmSearch.value = ""; 
+        const dmSearch = document.getElementById('dmSearch'); if(dmSearch) dmSearch.value = ""; 
         
         document.getElementById('chatRoom')?.classList.add('active');
         const messagesContainer = document.getElementById('chatMessagesContainer');
@@ -824,10 +816,6 @@ async function executeSendMessage() {
     } catch (e) { console.error("Message send failure:", e); }
 }
 
-
-// =========================================================================
-// GLOBAL THREADS ENGINE
-// =========================================================================
 function listenToGlobalThreads() {
     if (!currentUser) return;
     if (threadsUnsubscribe) threadsUnsubscribe();
@@ -840,16 +828,24 @@ function listenToGlobalThreads() {
         if(!container) return;
         container.innerHTML = "";
 
-        if (snapshot.empty) {
-            container.innerHTML = `<div style="text-align:center; opacity:0.5; font-size:0.9rem; margin-top:20px;">No thoughts dropped yet. Be the first!</div>`;
-            return;
-        }
+        if (snapshot.empty) { container.innerHTML = `<div style="text-align:center; opacity:0.5; font-size:0.9rem; margin-top:20px;">No thoughts dropped yet. Be the first!</div>`; return; }
+
+        // Get current username for Admin check
+        const currentUsername = document.getElementById('userName')?.innerText?.toLowerCase() || "";
 
         snapshot.forEach(docSnap => {
             const data = docSnap.data();
             const item = document.createElement('div');
             item.className = 'thread-item';
             
+            // --- NEW: ADMIN OVERRIDE CHECK ---
+            const isMyThread = currentUser && (data.senderId === currentUser.uid);
+            const isAdmin = currentUser && ADMIN_USERNAMES.includes(currentUsername);
+            const canDelete = isMyThread || isAdmin;
+            
+            // Add 'my-thread' class if they have power to delete it (adds the CSS circle properly)
+            if (canDelete) item.classList.add('my-thread'); 
+
             let timeString = "";
             if (data.timestamp) {
                 const date = data.timestamp.toDate();
@@ -866,19 +862,57 @@ function listenToGlobalThreads() {
                 `;
             }
 
+            const likedBy = data.likedBy || [];
+            let isLiked = false;
+            if (currentUser) { isLiked = likedBy.some(user => user.uid === currentUser.uid); }
+
+            const heartFill = isLiked ? "var(--greeting-color)" : "none";
+            const heartStroke = "var(--greeting-color)";
+            const likeIconHTML = `<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:${heartFill}; stroke:${heartStroke}; stroke-width:2; transition: fill 0.2s ease;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+
+            let pfpsHTML = "";
+            if (likedBy.length > 0) {
+                const stackHTML = likedBy.slice(0, 3).map(u => `<img src="${u.pfpUrl || 'cloud.png'}" class="liked-by-pfp">`).join('');
+                const text = likedBy.length === 1 ? "1 person" : `${likedBy.length} others`; 
+                pfpsHTML = `<div class="liked-by-container"><div class="liked-by-stack">${stackHTML}</div><span class="liked-by-text">Liked by ${text}</span></div>`;
+            }
+
+            const actionsHTML = `<div class="thread-actions"><button class="like-btn" id="like_${docSnap.id}">${likeIconHTML}</button>${pfpsHTML}</div>`;
+
             item.innerHTML = `
+                <div class="thread-select-circle"></div>
                 <div class="thread-user-info">
-                    <div class="thread-avatar">
-                        <img src="${data.pfpUrl || 'cloud.png'}" alt="Avatar">
-                    </div>
+                    <div class="thread-avatar"><img src="${data.pfpUrl || 'cloud.png'}" alt="Avatar"></div>
                     <span class="thread-username">${data.username || 'User'}</span>
                 </div>
                 ${quoteBlockHTML}
                 <div class="thread-text">${data.text}</div>
                 <div class="thread-timestamp">${timeString}</div>
+                ${actionsHTML}
             `;
             
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                if(e.target.closest('.like-btn')) return;
+
+                // --- NEW: DELETE MODE LOGIC ---
+                if (isDeleteMode) {
+                    // Check our new Admin variable instead of just isMyThread
+                    if (!canDelete) return; 
+                    
+                    if (selectedThreadsForDelete.has(docSnap.id)) {
+                        selectedThreadsForDelete.delete(docSnap.id);
+                        item.classList.remove('selected-for-delete');
+                    } else {
+                        selectedThreadsForDelete.add(docSnap.id);
+                        item.classList.add('selected-for-delete');
+                    }
+                    
+                    const executeBtn = document.getElementById('executeDeleteBtn');
+                    if(executeBtn) executeBtn.innerText = `Delete (${selectedThreadsForDelete.size})`;
+                    return; 
+                }
+
+                // --- EXISTING REPLY LOGIC ---
                 currentReplyTarget = data.username;
                 currentReplySnippet = data.text; 
                 const targetName = document.getElementById('replyTargetName');
@@ -892,6 +926,23 @@ function listenToGlobalThreads() {
                 if(input) input.focus();
             });
 
+            const likeBtn = item.querySelector(`#like_${docSnap.id}`);
+            if (likeBtn) {
+                likeBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation(); 
+                    if (!currentUser) return alert("Please login to like!");
+                    if (navigator.vibrate) navigator.vibrate(50); 
+                    
+                    const threadRef = doc(db, "global_threads", docSnap.id);
+                    if (isLiked) {
+                        const newLikedBy = likedBy.filter(u => u.uid !== currentUser.uid);
+                        await updateDoc(threadRef, { likedBy: newLikedBy });
+                    } else {
+                        const newLikedBy = [...likedBy, { uid: currentUser.uid, pfpUrl: currentUserPfp }];
+                        await updateDoc(threadRef, { likedBy: newLikedBy });
+                    }
+                });
+            }
             container.appendChild(item);
         });
     });
@@ -899,7 +950,6 @@ function listenToGlobalThreads() {
 
 async function postGlobalThread() {
     if (!currentUser) return alert("Please login to post a thread!");
-    
     const inputField = document.getElementById('threadInput');
     if(!inputField) return;
     let txt = inputField.value.trim();
@@ -909,36 +959,23 @@ async function postGlobalThread() {
     const replySnippet = currentReplySnippet;
 
     inputField.value = ""; 
-    
-    currentReplyTarget = null;
-    currentReplySnippet = null;
+    currentReplyTarget = null; currentReplySnippet = null;
     const banner = document.getElementById('replyPreviewBanner');
     if(banner) banner.style.display = 'none';
 
     try {
         const snap = await getDoc(doc(db, "users", currentUser.uid));
-        let username = "User";
-        let pfpUrl = "cloud.png";
-        if (snap.exists()) {
-            username = snap.data().username || "User";
-            pfpUrl = snap.data().pfpUrl || "cloud.png";
-        }
+        let username = "User"; let pfpUrl = "cloud.png";
+        if (snap.exists()) { username = snap.data().username || "User"; pfpUrl = snap.data().pfpUrl || "cloud.png"; }
 
         await addDoc(collection(db, "global_threads"), {
-            senderId: currentUser.uid,
-            username: username,
-            pfpUrl: pfpUrl,
-            text: txt, 
-            replyToUser: replyTarget || null,
-            replyToText: replySnippet || null,
-            timestamp: serverTimestamp()
+            senderId: currentUser.uid, username: username, pfpUrl: pfpUrl,
+            text: txt, replyToUser: replyTarget || null, replyToText: replySnippet || null,
+            likedBy: [], timestamp: serverTimestamp()
         });
     } catch (e) { console.error("Thread post failure:", e); }
 }
 
-// =========================================================================
-// DROPS ENGINE (STACKS)
-// =========================================================================
 function loadDropsForUser(uid, username) {
     currentDropsUser = uid;
     const title = document.getElementById('dropsTitle');
@@ -965,11 +1002,11 @@ function renderDropsStack() {
     if(!container) return;
     container.innerHTML = "";
     const eraseBtn = document.getElementById('eraseDropBtn');
-    if(eraseBtn) eraseBtn.style.display = (currentDropsUser === currentUser.uid && currentDrops.length > 0) ? 'block' : 'none';
+    
+    if(eraseBtn) eraseBtn.style.display = (currentDropsUser === currentUser.uid && currentDrops.length > 0) ? 'flex' : 'none';
 
     if (currentDrops.length === 0) {
-        container.innerHTML = `<div style="color:var(--greeting-color); opacity:0.5; font-size:1.1rem;">No drops yet!</div>`;
-        return;
+        container.innerHTML = `<div style="color:var(--greeting-color); opacity:0.5; font-size:1.1rem;">No drops yet!</div>`; return;
     }
 
     currentDrops.forEach((drop, index) => {
@@ -996,18 +1033,13 @@ function renderDropsStack() {
     });
 }
 
-// =========================================================================
-// STRICT MOBILE VIEWPORT & BOUNCE LOCK
-// =========================================================================
 let lastTouchEnd = 0;
 document.addEventListener('touchend', (event) => {
     const now = (new Date()).getTime();
     if (now - lastTouchEnd <= 300) event.preventDefault(); 
     lastTouchEnd = now;
 }, { passive: false });
-
 document.addEventListener('gesturestart', (event) => event.preventDefault());
-
 document.addEventListener('touchmove', (event) => {
     const isInsideScrollableList = event.target.closest('.dm-list, .chat-messages, .drop-search-results, .threads-feed, .social-content');
     if (!isInsideScrollableList) event.preventDefault(); 
