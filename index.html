@@ -29,6 +29,12 @@
     <!-- ========================================= -->
     <section class="threads-widget" id="mainThreads">
         <div class="threads-glass-box" id="threadsGlassBox">
+            
+            <!-- NEW: Top Left Delete Icon -->
+            <button id="deleteModeBtn" class="delete-mode-toggle-btn">
+                <img src="delete.png" alt="Delete">
+            </button>
+
             <button class="box-toggle-btn" id="toggleThreadsBtn"></button>
             <div class="threads-header">
                 <img src="clear.png" alt="Public Feed" class="threads-label-icon">
@@ -48,10 +54,21 @@
             </div>
             
             <div class="threads-input-wrapper">
+                <!-- Standard Input -->
                 <input type="text" id="threadInput" class="thread-input" placeholder="Drop a thought..." autocomplete="off">
                 <button id="threadSendBtn" class="thread-send">
                     <img src="send.png" alt="Send">
                 </button>
+
+                <!-- NEW: Frosted Glass Delete Action Bar (Hidden by default) -->
+                <div id="deleteActionBar" class="frosted-delete-bar" style="display: none;">
+                    <button id="executeDeleteBtn" class="execute-delete-btn">
+                        Delete (0)
+                    </button>
+                    <button id="cancelDeleteBtn" class="cancel-delete-btn">
+                        <img src="cross.png" alt="Cancel">
+                    </button>
+                </div>
             </div>
 
             <div class="future-quotes-box" id="futureQuotesBox">
@@ -156,8 +173,9 @@
         <div class="drops-controls-container">
             <input type="text" id="dropSearch" class="drop-search-input" placeholder="Search for users..." autocomplete="off">
             <div class="drop-actions">
-                <button class="drop-action-btn" id="pickNclickBtn">PickNclick 📷</button>
-                <button class="drop-action-btn erase-btn" id="eraseDropBtn">Erase 🗑️</button>
+                <!-- UPDATED BUTTONS: Emojis removed, PNGs added, Erase hidden by default -->
+                <button class="drop-action-btn" id="pickNclickBtn">PickNclick <img src="cam.png" alt="cam"></button>
+                <button class="drop-action-btn erase-btn" id="eraseDropBtn" style="display: none;">Erase <img src="vanish.png" alt="erase"></button>
                 <input type="file" id="dropFileInput" accept="image/*" style="display: none;">
             </div>
         </div>
